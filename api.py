@@ -45,7 +45,7 @@ def api(minprice,maxprice,asurakuflag,genreid):    # 引数(budget, asuraku, cat
             if key in item_key:
              tmp_item[key] = value
         item_list.append(tmp_item.copy())
-
+    
     # データフレームの表示の省略化を無効化
     pd.set_option('display.max_colwidth', 1000)
     
@@ -59,8 +59,16 @@ def api(minprice,maxprice,asurakuflag,genreid):    # 引数(budget, asuraku, cat
     items_df.columns = ['商品名', '商品画像URL', '商品URL', 'レビュー']
     items_df.index = np.arange(1, 31)
 
+    imageurl = []
+    for i in range(1, 31):
+        f_1 = items_df.loc[i, ['商品画像URL']]
+        f_2 = f_1.values.tolist()
+        f_3 = f_2[0][0]
+        f_4 = f_3['imageUrl']
+        f_5 = f_4.replace('?_ex=128x128', '')
+        imageurl.append(f_5)
+        
     itemname = items_df.loc[:, ['商品名']]
-    imageurl = items_df.loc[:, ['商品画像URL']]
     itemurl = items_df.loc[:, ['商品URL']]
     review = items_df.loc[:, ['レビュー']]
     
