@@ -2,23 +2,32 @@ import requests
 import pandas as pd
 import numpy as np
 
-def main():    # 引数(budget, asuraku, category)
+"""
+long : minprice
+long : maxprice
+string : genreid
+bool   : asurakuflag
+string : asurakuarea  （県名を～県で）エラー吐くので一旦停止中
+string : genreid
+"""
+#566382
+def api(minprice,maxprice,asurakuflag,genreid):    # 引数(budget, asuraku, category)
     #楽天商品検索APIリクエストURL
     url = "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706?"
-
-    
     #入力パラメーターを指定
     param = {
         "applicationId" : "",       #アプリIDを入力
-        "keyword" : "おもしろ雑貨",
-        "format" : "json",
-        "imageFlag" : 1,
-        #"minPrice" : minprice,
-        #"maxPrice" : maxprice,
-        #"asurakuFlag" : asurakuflag,
-        #"asurakuArea" : asurakuarea
+        "keyword"     : "おもしろ雑貨",
+        "format"      : "json",
+        "imageFlag"   : 1,
+        "minPrice"    : minprice,
+        "maxPrice"    : maxprice,
+        "asurakuFlag" : asurakuflag,
+        #"asurakuArea" : asurakuarea,
+        "genreId"     : genreid
     }
-
+    
+    
     # APIを実行して結果を取得する
     result = requests.get(url, param)
 
@@ -37,6 +46,9 @@ def main():    # 引数(budget, asuraku, category)
              tmp_item[key] = value
         item_list.append(tmp_item.copy())
 
+    # データフレームの表示の省略化を無効化
+    pd.set_option('display.max_colwidth', 1000)
+    
     # データフレームを作成
     items_df = pd.DataFrame(item_list)
     
@@ -47,9 +59,13 @@ def main():    # 引数(budget, asuraku, category)
     items_df.columns = ['商品名', '商品画像URL', '商品URL', 'レビュー']
     items_df.index = np.arange(1, 31)
 
-    #item_dfから出力したいものを指定
-    return(items_df[['商品名', '商品画像URL', '商品URL', 'レビュー']])
+    itemname = items_df.loc[:, ['商品名']]
+    imageurl = items_df.loc[:, ['商品画像URL']]
+    itemurl = items_df.loc[:, ['商品URL']]
+    review = items_df.loc[:, ['レビュー']]
+    
+    return(itemname, imageurl, itemurl, review)
     
 if __name__ == "__main__":
-    output = main()
+    output = api()
     print(output)
