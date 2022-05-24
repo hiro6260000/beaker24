@@ -2,15 +2,6 @@ import requests
 import streamlit as st
 from transmit import SearchResult
 
-"""
-long : minprice
-long : maxprice
-string : genreid
-bool   : asurakuflag
-string : asurakuarea  （県名を～県で）エラー吐くので一旦停止中
-string : genreid
-"""
-
 
 def search_product(search_options):
     # 楽天商品検索APIリクエストURL

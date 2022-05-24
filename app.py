@@ -1,13 +1,12 @@
 import streamlit as st
+import streamlit.components.v1 as stc
 import json
 from api import search_product
 from transmit import SearchOptions
-import streamlit.components.v1 as stc
+import time
 
 
 def sidebar(search_options):
-    
-        
     # 都道府県データの読み込み
     with open("./prefectures.json", mode="r", encoding="utf-8") as f:
         raw = f.read()
@@ -18,23 +17,12 @@ def sidebar(search_options):
         raw = f.read()
         category_codes = json.loads(raw)
 
+    # htmlの読み込み
+    with open("./layout/sidebar.html", "r", encoding="utf-8") as f:
+        sidebar_html = f.read()
+
     with st.sidebar:
-        stc.html("""
-        <head>
-            <link rel="preconnect" href="https://fonts.googleapis.com">
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-            <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet">  
-        </head>
-        <div class = "sidebar">      
-          <h1>プレゼント設定</h1>
-          <p>プレゼントを贈る相手に喜んでもらえるように、条件を絞りましょう。</p>
-        </div>
-        <style>
-          .sidebar{
-              font-family: 'Hachi Maru Pop', cursive;
-          }
-        </style>
-        """)
+        stc.html(sidebar_html)
 
         budget = st.radio(
             "プレゼントの予算",
@@ -68,85 +56,21 @@ def sidebar(search_options):
 
 
 def main():
-    stc.html("""
-    <head>
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet">  
-    </head>
-    <body>
-        <div class = "box14">
-          <h1>　　フ<span class =  "char1">ァ</span>ニ<span class = "char2">ー</span>プレゼントアドバイザ<span class = "char3">ー</span></h1>
-        </div>
+    with open("./layout/title.html", "r", encoding="utf-8") as f:
+        title_html = f.read()
+    stc.html(title_html)
 
-        <div class = "title">
-          <div class = "intro">
-            <a>ひだりうえのさんかくっぽいやつをおしてねぇ。</a>
-            <div class = "rotate">&#9756;</div>
-          </div>          
-        </div>
-    </body>
-
-    <style>
-    body{
-     font-family: 'Hachi Maru Pop', cursive;
-    }
-    .char1{
-        color:#00CDEA;
-    }
-    .char2{
-        color:#00CDEA;
-    }
-    .char3{
-        color:#00CDEA;
-    }
-    .rotate{
-      position:absolute;
-      left:0;
-      top:5px;
-      font-size:40px;
-      color:white;
-      transition:5s all;
-    }
-    a{
-        color:black;
-    }
-    a:hover{
-        color:#FFF218;
-    }
-    a:hover + .rotate{
-        color:#00CDEA;
-        transform:rotate(405deg);
-    }
-    
-    .title{
-        width:75%;
-        height:100px;
-    }
-    .box14{
-        width:100%;
-        height:50px;
-        padding:0em 1em;
-        margin: 0 0;
-        color: #FF4E63;
-        backgroud: #d6ebff;
-        border-bottom: solid 6px #FFF218;
-        border-radius: 9px;
-    }
-    .box14 h1{
-        margin:0;
-        padding:0;
-        font-size:40px;   
-    }
-    </style>
-    """
-    )
-    
+    # last_clickがsession_stateに追加されていない場合0で初期化
+    if "last_click" not in st.session_state:
+        st.session_state.last_click = 0
 
     search_options = SearchOptions()
     ret = sidebar(search_options)
 
-    if ret is not None:
+    # 1秒経たないと検索できないように制限
+    if ret is not None and time.time() - st.session_state.last_click > 1:
+        st.session_state.last_click = time.time()
+
         # api.pyで検索
         items = search_product(search_options)
 
